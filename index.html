@@ -10,20 +10,21 @@
 <body>
   <h2>巨戟アーティア厳選シミュレータ</h2>
 
-  遺装置（攻撃激化タイプ）: <input id="atk" type="number" value="0"><br>
-  遺装置（会心激化タイプ）: <input id="crt" type="number" value="0"><br>
-  遺装置（属性激化タイプ）: <input id="elm" type="number" value="0"><br>
+  <label>遺装置（攻撃激化タイプ）<span class="required">*</span>: <input id="atk" type="number" placeholder="0"></label><br>
+  <label>遺装置（会心激化タイプ）<span class="required">*</span>: <input id="crt" type="number" placeholder="0"></label><br>
+  <label>遺装置（属性激化タイプ）<span class="required">*</span>: <input id="elm" type="number" placeholder="0"></label><br>
 
   <h3>厳選対象</h3>
   <label><input type="radio" name="target" value="atk" checked>攻撃激化タイプ</label>
   <label><input type="radio" name="target" value="crt">会心激化タイプ</label>
   <label><input type="radio" name="target" value="elm">属性激化タイプ</label>
 
-  <h3>当たり回数 (例: 77, 228, 276)</h3>
-  <input id="hits" type="text" value="77,122,153,228,276,309" class="wide-input"><br>
+  <h3>当たり回数 (例: 77, 228, 276) <span class="required">*</span></h3>
+  <input id="hits" type="text" value="77,122,153,228,276,309" class="wide-input">
 
   <h3>武器名 (例: 火ガンス, 龍ガンス, 麻痺ガンス)</h3>
-  <input id="weapons" type="text" value="火ガンス,龍ガンス,麻痺ガンス,水ガンス,雷ガンス,水ガンス" class="wide-input"><br>
+  <input id="weapons" type="text" value="火ガンス,龍ガンス,麻痺ガンス,水ガンス,雷ガンス,水ガンス" class="wide-input">
+  
   <button onclick="calculateSimulation()">実行</button>
 
   <h3>結果</h3>
@@ -37,11 +38,9 @@
           <th>消費アクション</th>
         </tr>
       </thead>
-      <tbody id="out-body">
-      </tbody>
+      <tbody id="out-body"></tbody>
     </table>
   </div>
   <script src="script.js"></script>
 </body>
-
 </html>

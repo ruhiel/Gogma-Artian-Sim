@@ -2,32 +2,39 @@
  * シミュレーションのメイン処理
  */
 function calculateSimulation() {
-    const partsDisplayName = {
-        atk: "攻撃",
-        crt: "会心",
-        elm: "属性",
-    };
+    const partsDisplayName = { atk: "攻撃", crt: "会心", elm: "属性" };
 
-    let parts = {
-        atk: Number(document.getElementById("atk").value),
-        crt: Number(document.getElementById("crt").value),
-        elm: Number(document.getElementById("elm").value)
-    };
-
-    const hitsInput = document.getElementById("hits").value;
-    const weaponsInput = document.getElementById("weapons").value; // 追加
+    const atkVal = document.getElementById("atk").value;
+    const crtVal = document.getElementById("crt").value;
+    const elmVal = document.getElementById("elm").value;
     const outBody = document.getElementById("out-body");
 
-    // --- 入力バリデーション ---
+    // --- 遺装置の入力チェック ---
+    if (atkVal === "" || crtVal === "" || elmVal === "") {
+        showError(outBody, "遺装置の数をすべて入力してください。");
+        return;
+    }
 
+    let parts = {
+        atk: Number(atkVal),
+        crt: Number(crtVal),
+        elm: Number(elmVal)
+    };
+
+    if (parts.atk === 0 && parts.crt === 0 && parts.elm === 0) {
+        showError(outBody, "遺装置がすべて0です。厳選を開始できません。");
+        return;
+    }
+
+    // --- 当たり回数の入力チェック ---
+    const hitsInput = document.getElementById("hits").value;
     if (!hitsInput.trim()) {
         showError(outBody, "当たり回数を入力してください。");
         return;
     }
 
-    // 武器名のパース
-    const weaponList = weaponsInput.split(",").map(w => w.trim()).filter(w => w !== "");
-
+    const weaponsInput = document.getElementById("weapons").value;
+    const weaponList = weaponsInput.split(",").map(w => w.trim());
     const rawHits = hitsInput.split(",");
     const tempHitList = [];
     const seenHits = new Set();
@@ -50,17 +57,13 @@ function calculateSimulation() {
         tempHitList.push(num);
     }
 
-    // 回数と武器名の数が一致するかチェック
-    if (tempHitList.length !== weaponList.length) {
-        showError(outBody, `当たり回数(${tempHitList.length})と武器名(${weaponList.length})の数が一致しません。`);
-        return;
-    }
-
-    // 回数と武器名をペアにして、回数順にソートする
-    const combinedList = tempHitList.map((hit, i) => ({ hit, weapon: weaponList[i] }));
+    // 回数と武器名をペアにしてソート
+    const combinedList = tempHitList.map((hit, i) => ({
+        hit,
+        weapon: weaponList[i] !== undefined ? weaponList[i] : ""
+    }));
     combinedList.sort((a, b) => a.hit - b.hit);
 
-    // ソート後のリストから再度配列を抽出
     const hitList = combinedList.map(item => item.hit);
     const sortedWeapons = combinedList.map(item => item.weapon);
 
@@ -73,7 +76,7 @@ function calculateSimulation() {
     for (let i = 0; i < intervalList.length; i++) {
         const interval = intervalList[i];
         const hitCount = hitList[i];
-        const weaponName = sortedWeapons[i]; // 現在の武器名
+        const weaponName = sortedWeapons[i];
         let skipValue = (interval - 1) * 3;
 
         currentAdjustmentKey = determineAdjustmentKey(parts, selectedTarget, currentAdjustmentKey, skipValue);
@@ -94,15 +97,11 @@ function calculateSimulation() {
             showError(outBody, `当たり時に「${partsDisplayName[selectedTarget]}」が不足しました。`);
             return;
         }
-        // ここに武器名を表示
-        addRow(outBody, parts, `<span class="hit-row">${partsDisplayName[selectedTarget]} を 3 消費 (${hitCount}回目：当たり [${weaponName}])</span>`);
+
+        const weaponLabel = weaponName ? ` [${weaponName}]` : "";
+        addRow(outBody, parts, `<span class="hit-row">${partsDisplayName[selectedTarget]} を 3 消費 (${hitCount}回目：当たり${weaponLabel})</span>`);
     }
 }
-
-/**
- * 以下、showError, addRow, determineAdjustmentKey, calculateIntervals, 
- * getHighestPriorityKey, consumeParts の各関数は変更なし
- */
 
 function showError(container, message) {
     alert(`エラー: ${message}`);

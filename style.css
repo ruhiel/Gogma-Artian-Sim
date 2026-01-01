@@ -80,3 +80,23 @@ input:focus {
   border-color: #5dade2 !important;
   outline: none;
 }
+
+/* 必須マークのスタイル */
+.required {
+  color: #ff4d4d;
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+/* 前回のスタイル設定も維持してください */
+input[type="text"].wide-input,
+input[type="number"] {
+  box-sizing: border-box;
+  padding: 8px;
+  background: #2c3e50;
+  color: #fff;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  font-size: 16px;
+  margin: 4px;
+}
