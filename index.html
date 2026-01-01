@@ -3,124 +3,45 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>パーツ厳選シミュレータ</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #111;
-      color: #eee;
-      padding: 20px
-    }
-
-    input,
-    button {
-      font-size: 16px;
-      margin: 4px
-    }
-
-    .result {
-      white-space: pre-line;
-      background: #222;
-      padding: 12px;
-      border-radius: 6px
-    }
-  </style>
+  <title>巨戟アーティア厳選シミュレータ</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+  <h2>巨戟アーティア厳選シミュレータ</h2>
 
-  <h2>パーツ厳選シミュレータ</h2>
-
-  攻撃: <input id="atk" type="number" value="469"><br>
-  会心: <input id="crt" type="number" value="509"><br>
-  属性: <input id="elm" type="number" value="728"><br>
+  遺装置（攻撃激化タイプ）: <input id="atk" type="number" value="0"><br>
+  遺装置（会心激化タイプ）: <input id="crt" type="number" value="0"><br>
+  遺装置（属性激化タイプ）: <input id="elm" type="number" value="0"><br>
 
   <h3>厳選対象</h3>
-  <label><input type="radio" name="target" value="atk" checked>攻撃</label>
-  <label><input type="radio" name="target" value="crt">会心</label>
-  <label><input type="radio" name="target" value="elm">属性</label>
+  <label><input type="radio" name="target" value="atk" checked>攻撃激化タイプ</label>
+  <label><input type="radio" name="target" value="crt">会心激化タイプ</label>
+  <label><input type="radio" name="target" value="elm">属性激化タイプ</label>
 
-  <h3>当たり回数 (例: 77,228,276)</h3>
-  <input id="hits" type="text" value="77,122,153,228,276,309" size="30"><br>
-  <button onclick="run()">実行</button>
+  <h3>当たり回数 (例: 77, 228, 276)</h3>
+  <input id="hits" type="text" value="77,122,153,228,276,309" class="wide-input"><br>
+
+  <h3>武器名 (例: 火ガンス, 龍ガンス, 麻痺ガンス)</h3>
+  <input id="weapons" type="text" value="火ガンス,龍ガンス,麻痺ガンス,水ガンス,雷ガンス,水ガンス" class="wide-input"><br>
+  <button onclick="calculateSimulation()">実行</button>
 
   <h3>結果</h3>
-  <div class="result" id="out"></div>
-
-  <script>
-    function run() {
-      let partsDisplayName = {
-        atk: "攻撃",
-        crt: "会心",
-        elm: "属性",
-      }
-      let parts = {
-        atk: Number(atk.value),
-        crt: Number(crt.value),
-        elm: Number(elm.value)
-      };
-
-      const target = document.querySelector('input[name="target"]:checked').value;
-      const hitList = hits.value.split(",").map(v => Number(v.trim())).sort((a, b) => a - b);
-
-      let result = [];
-      let targetKey = getTargetKey(parts, target);
-      let difflist = getDiffList(hitList);
-
-      for (const hit of difflist) {
-
-        let value = (hit - 1) * 3;
-
-        targetKey = targetCheck(parts, target, targetKey, value);
-
-        consumption(parts, targetKey, value);
-
-        result.push(`${parts.atk} ${parts.crt} ${parts.elm} まで${partsDisplayName[targetKey]}のパーツ消費`);
-
-        consumption(parts, target, 3);
-
-        result.push(`${partsDisplayName[target]}のパーツ消費`);
-      }
-
-      out.textContent = result.join("\n");
-    }
-    function targetCheck(parts, target, targetKey, value) {
-      if (parts[targetKey] > value) {
-        return targetKey;
-      } else {
-        return getTargetKey(parts, target);
-      }
-    }
-    function getDiffList(list) {
-      if (list.length === 0) return [];
-
-      let result = [];
-      result.push(list[0]);
-
-      for (let i = 1; i < list.length; i++) {
-        result.push(list[i] - list[i - 1]);
-      }
-
-      return result;
-    }
-    function getTargetKey(parts, target) {
-      let keys = ["atk", "crt", "elm"];
-      const idx = keys.indexOf(target);
-
-      if (idx !== -1) {
-        keys.splice(idx, 1);
-      }
-      if (parts[keys[0]] > parts[keys[1]]) {
-        return keys[0];
-      } else {
-        return keys[1];
-      }
-    }
-    function consumption(parts, targetKey, value) {
-      parts[targetKey] -= value;
-    }
-  </script>
-
+  <div id="result-container">
+    <table id="out-table">
+      <thead>
+        <tr>
+          <th>遺装置（攻撃）</th>
+          <th>遺装置（会心）</th>
+          <th>遺装置（属性）</th>
+          <th>消費アクション</th>
+        </tr>
+      </thead>
+      <tbody id="out-body">
+      </tbody>
+    </table>
+  </div>
+  <script src="script.js"></script>
 </body>
 
 </html>

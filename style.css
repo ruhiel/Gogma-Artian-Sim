@@ -1,0 +1,82 @@
+body {
+  font-family: sans-serif;
+  background: #111;
+  color: #eee;
+  padding: 20px
+}
+
+input,
+button {
+  font-size: 16px;
+  margin: 4px
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: #222;
+}
+
+th,
+td {
+  border: 1px solid #444;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+th {
+  background: #333;
+  color: #fff;
+}
+
+tr:nth-child(even) {
+  background: #2a2a2a;
+}
+
+.target-cell {
+  font-weight: bold;
+  color: #ffda44;
+}
+
+.hit-row {
+  color: #00ffcc;
+  font-weight: bold;
+}
+
+/* すべての入力欄（数値・テキスト）の共通スタイル */
+input[type="text"].wide-input,
+input[type="number"] {
+  box-sizing: border-box;
+  padding: 8px;
+  color: #2c3e50;
+  /* 当たり回数と同じ背景色 */
+  background: #fff;
+  border: 2px solid #3498db;
+  /* 統一した青い枠線 */
+  border-radius: 6px;
+  font-size: 16px;
+  margin: 4px;
+}
+
+/* 数値入力欄（遺装置）の幅を個別に調整 */
+input[type="number"] {
+  width: 100px;
+  /* 数値が見やすい適度な幅 */
+}
+
+/* テキスト入力欄（当たり回数・武器）の幅を個別に調整 */
+input[type="text"].wide-input {
+  width: 100%;
+  max-width: 600px;
+  display: block;
+  /* 改行を制御しやすくする */
+  margin-bottom: 15px;
+}
+
+/* フォーカス時の演出 */
+input:focus {
+  background: #5dade2 !important;
+  border-color: #5dade2 !important;
+  outline: none;
+}
