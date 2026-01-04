@@ -7,6 +7,9 @@ function calculateSimulation() {
     const atkVal = document.getElementById("atk").value;
     const crtVal = document.getElementById("crt").value;
     const elmVal = document.getElementById("elm").value;
+    // --- 最低残す数の取得 ---
+    const minReserve = Number(document.getElementById("min-reserve").value) || 0;
+
     const outBody = document.getElementById("out-body");
 
     // --- 遺装置の入力チェック ---
@@ -70,6 +73,7 @@ function calculateSimulation() {
     // --- 計算処理 ---
     outBody.innerHTML = "";
     const selectedTarget = document.querySelector('input[name="target"]:checked').value;
+    // 初期調整用パーツを決定
     let currentAdjustmentKey = getHighestPriorityKey(parts, selectedTarget);
     const intervalList = calculateIntervals(hitList);
 
@@ -79,35 +83,48 @@ function calculateSimulation() {
         const weaponName = sortedWeapons[i];
         let skipValue = (interval - 1) * 3;
 
-        currentAdjustmentKey = determineAdjustmentKey(parts, selectedTarget, currentAdjustmentKey, skipValue);
-
+        // --- 1. 調整（スキップ）分の消費判定 ---
         if (skipValue > 0) {
-            consumeParts(parts, currentAdjustmentKey, skipValue);
-            if (parts[currentAdjustmentKey] < 0) {
-                showError(outBody, `調整中に「${partsDisplayName[currentAdjustmentKey]}」が不足しました。`);
+            // 現在のパーツで最低残数を下回る場合は、最適なパーツを再選定
+            if (parts[currentAdjustmentKey] - skipValue < minReserve) {
+                currentAdjustmentKey = determineAdjustmentKey(parts, selectedTarget, currentAdjustmentKey, skipValue, minReserve);
+            }
+
+            // 選定し直してもなお足りない場合はエラー中断
+            if (parts[currentAdjustmentKey] - skipValue < minReserve) {
+                showError(outBody, `調整中に「${partsDisplayName[currentAdjustmentKey]}」が最低残数(${minReserve})を下回るため中断しました。もう一方のパーツも不足しています。`);
                 return;
             }
+
+            consumeParts(parts, currentAdjustmentKey, skipValue);
             addRow(outBody, parts, `${partsDisplayName[currentAdjustmentKey]} を ${skipValue} 消費 (調整)`);
         } else {
             addRow(outBody, parts, `(調整なし)`);
         }
 
-        consumeParts(parts, selectedTarget, 3);
-        if (parts[selectedTarget] < 0) {
-            showError(outBody, `当たり時に「${partsDisplayName[selectedTarget]}」が不足しました。`);
+        // --- 2. 当たり分の消費判定 ---
+        if (parts[selectedTarget] - 3 < minReserve) {
+            showError(outBody, `当たり時に「${partsDisplayName[selectedTarget]}」が最低残数(${minReserve})を下回るため中断しました。`);
             return;
         }
 
+        consumeParts(parts, selectedTarget, 3);
         const weaponLabel = weaponName ? ` [${weaponName}]` : "";
         addRow(outBody, parts, `<span class="hit-row">${partsDisplayName[selectedTarget]} を 3 消費 (${hitCount}回目：当たり${weaponLabel})</span>`);
     }
 }
 
+/**
+ * エラー表示
+ */
 function showError(container, message) {
     alert(`エラー: ${message}`);
     container.innerHTML = "";
 }
 
+/**
+ * テーブルに行を追加
+ */
 function addRow(container, parts, actionHtml) {
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -119,14 +136,22 @@ function addRow(container, parts, actionHtml) {
     container.appendChild(row);
 }
 
-function determineAdjustmentKey(parts, target, currentKey, requiredValue) {
-    if (parts[currentKey] >= requiredValue) {
+/**
+ * 調整用のパーツキーを判定
+ */
+function determineAdjustmentKey(parts, target, currentKey, requiredValue, minReserve) {
+    // 現在のキーで足りるならそのまま返す
+    if (parts[currentKey] - minReserve >= requiredValue) {
         return currentKey;
     } else {
+        // 足りない場合は、ターゲット以外の最も所持数が多いキーを返す
         return getHighestPriorityKey(parts, target);
     }
 }
 
+/**
+ * インターバル（前回の当たりからの差分）を計算
+ */
 function calculateIntervals(list) {
     if (list.length === 0) return [];
     let intervals = [list[0]];
@@ -136,11 +161,17 @@ function calculateIntervals(list) {
     return intervals;
 }
 
+/**
+ * ターゲットを除外したパーツの中で、最も所持数が多いキーを取得
+ */
 function getHighestPriorityKey(parts, excludedTarget) {
     let keys = ["atk", "crt", "elm"].filter(k => k !== excludedTarget);
     return parts[keys[0]] > parts[keys[1]] ? keys[0] : keys[1];
 }
 
+/**
+ * パーツを消費
+ */
 function consumeParts(parts, key, value) {
     parts[key] -= value;
 }
