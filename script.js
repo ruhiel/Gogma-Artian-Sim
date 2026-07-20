@@ -73,8 +73,6 @@ function calculateSimulation() {
     // --- 計算処理 ---
     outBody.innerHTML = "";
     const selectedTarget = document.querySelector('input[name="target"]:checked').value;
-    // 初期調整用パーツを決定
-    let currentAdjustmentKey = getHighestPriorityKey(parts, selectedTarget);
     const intervalList = calculateIntervals(hitList);
 
     for (let i = 0; i < intervalList.length; i++) {
@@ -85,14 +83,12 @@ function calculateSimulation() {
 
         // --- 1. 調整（スキップ）分の消費判定 ---
         if (skipValue > 0) {
-            // 現在のパーツで最低残数を下回る場合は、最適なパーツを再選定
-            if (parts[currentAdjustmentKey] - skipValue < minReserve) {
-                currentAdjustmentKey = determineAdjustmentKey(parts, selectedTarget, currentAdjustmentKey, skipValue, minReserve);
-            }
+            // 【変更】全パーツの中から最も所持数が多いキーを毎回判定
+            let currentAdjustmentKey = getHighestPriorityKey(parts);
 
-            // 選定し直してもなお足りない場合はエラー中断
+            // 選定した「一番多いパーツ」でも最低残数を下回る場合はエラー中断
             if (parts[currentAdjustmentKey] - skipValue < minReserve) {
-                showError(outBody, `調整中に「${partsDisplayName[currentAdjustmentKey]}」が最低残数(${minReserve})を下回るため中断しました。もう一方のパーツも不足しています。`);
+                showError(outBody, `調整中に「${partsDisplayName[currentAdjustmentKey]}」が最低残数(${minReserve})を下回るため中断しました。`);
                 return;
             }
 
@@ -123,7 +119,7 @@ function showError(container, message) {
 }
 
 /**
- * テーブルに行を追加
+ * テーブル 行追加
  */
 function addRow(container, parts, actionHtml) {
     const row = document.createElement("tr");
@@ -134,19 +130,6 @@ function addRow(container, parts, actionHtml) {
         <td class="target-cell">${actionHtml}</td>
       `;
     container.appendChild(row);
-}
-
-/**
- * 調整用のパーツキーを判定
- */
-function determineAdjustmentKey(parts, target, currentKey, requiredValue, minReserve) {
-    // 現在のキーで足りるならそのまま返す
-    if (parts[currentKey] - minReserve >= requiredValue) {
-        return currentKey;
-    } else {
-        // 足りない場合は、ターゲット以外の最も所持数が多いキーを返す
-        return getHighestPriorityKey(parts, target);
-    }
 }
 
 /**
@@ -162,11 +145,13 @@ function calculateIntervals(list) {
 }
 
 /**
- * ターゲットを除外したパーツの中で、最も所持数が多いキーを取得
+ * 【変更】全パーツの中で、最も所持数が多いキーを取得する（引き数なし）
  */
-function getHighestPriorityKey(parts, excludedTarget) {
-    let keys = ["atk", "crt", "elm"].filter(k => k !== excludedTarget);
-    return parts[keys[0]] > parts[keys[1]] ? keys[0] : keys[1];
+function getHighestPriorityKey(parts) {
+    let maxKey = "atk";
+    if (parts.crt > parts[maxKey]) maxKey = "crt";
+    if (parts.elm > parts[maxKey]) maxKey = "elm";
+    return maxKey;
 }
 
 /**
